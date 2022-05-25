@@ -50,13 +50,13 @@ class ChatterBot(commands.Cog):
 		# Check if we can chat
 		lastTime = int(self.settings.getServerStat(server, "LastChat", 0))
 		threshold = int(self.waitTime)
-		currentTime = int(time.perf_counter())
+		currentTime = int(time.localtime())
 
 		if currentTime < (int(lastTime) + int(threshold)):
 			return False
 		
 		# If we made it here - set the LastPicture method
-		self.settings.setServerStat(server, "LastChat", int(time.perf_counter()))
+		self.settings.setServerStat(server, "LastChat", int(time.localtime()))
 		return True
 	
 	async def killcheck(self, message):
