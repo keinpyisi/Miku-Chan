@@ -21,6 +21,7 @@ class CogManager(commands.Cog):
 
 	# Init with the bot reference, and a reference to the settings var
 	def __init__(self, bot, settings):
+		print(os.listdir("Cogs"))
 		self.preloads = ("Cogs.Utils","Cogs.DisplayName","Cogs.Settings","Cogs.Mute")
 		self.bot = bot
 		self.settings = settings
