@@ -169,7 +169,7 @@ class Search(commands.Cog):
 		"""Convert currencies.  If run with no values, the script will print a list of available currencies."""
 		
 		# Get the list of currencies
-		try: r = await DL.async_json("https://free.currconv.com/api/v7/currencies?apiKey="+self.key)
+		try: r = await DL.async_json("https://free.currconv.com/api/v7/currencies?apiKey=f6b541961ba60ba8dc42")
 		except:
 			api_status = await self._get_api_status()
 			return await ctx.send("Something went wrong getting that conversion :(\nThe current status of the API I use is: `{}`".format(api_status))

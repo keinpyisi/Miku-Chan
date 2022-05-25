@@ -53,11 +53,11 @@ allowed_mentions = discord.AllowedMentions(
 try:
 	# Setup intents
 	intents = discord.Intents().all()
-	bot = commands.AutoShardedBot(command_prefix=get_prefix, pm_help=None, description='A bot that does stuff.... probably', shard_count=4, intents=intents, allowed_mentions=allowed_mentions)
+	bot = commands.AutoShardedBot(command_prefix=get_prefix, pm_help=None, description='A Typical Suisei', shard_count=4, intents=intents, allowed_mentions=allowed_mentions)
 except:
 	# Possibly using the old gateway?
 	print("Using the old gateway - this may not be around forever...\n")
-	bot = commands.AutoShardedBot(command_prefix=get_prefix, pm_help=None, description='A bot that does stuff.... probably', shard_count=4, allowed_mentions=allowed_mentions)
+	bot = commands.AutoShardedBot(command_prefix=get_prefix, pm_help=None, description='A Typical Suisei ', shard_count=4, allowed_mentions=allowed_mentions)
 bot.settings_dict    = settings_dict
 bot.ready_dispatched = False
 

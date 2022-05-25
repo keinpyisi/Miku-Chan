@@ -1,7 +1,9 @@
+from ntpath import join
 import discord, wavelink, re, random, math, tempfile, json, os, shutil
 from discord.ext import commands
 from Cogs import Utils, Message, DisplayName, PickList, DL
-
+import scrapetube
+import random as r
 # This file was originally based on Rapptz's basic_voice.py:
 # https://github.com/Rapptz/discord.py/blob/master/examples/basic_voice.py
 
@@ -17,9 +19,9 @@ class Music(commands.Cog):
 		self.bot      = bot
 		self.settings = settings
 		# Get the Lavalink info as needed
-		self.ll_host = bot.settings_dict.get("lavalink_host","127.0.0.1")
-		self.ll_port = bot.settings_dict.get("lavalink_port",2333)
-		self.ll_pass = bot.settings_dict.get("lavalink_password","youshallnotpass")
+		self.ll_host = bot.settings_dict.get("lavalink_host","lavalink.oops.wtf")
+		self.ll_port = bot.settings_dict.get("lavalink_port",2000)
+		self.ll_pass = bot.settings_dict.get("lavalink_password","www.freelavalink.ga")
 		# Setup wavelink defaults
 		self.NodePool = wavelink.NodePool()
 		# Setup player specifics to remember
@@ -129,6 +131,7 @@ class Music(commands.Cog):
 		if not player.volume == volume:
 			await player.set_volume(volume)
 			player.vol = player.volume # Retain the setting
+		print("LINE 132 Music.py HERE IS TO PLAY VOICE")
 		await player.play(track)
 		if getattr(player,"track_seek",None): await player.seek(player.track_seek*1000)
 
@@ -642,6 +645,94 @@ class Music(commands.Cog):
 				return await Message.Embed(title="♫ I'm already playing music in {}!".format(player.channel),color=ctx.author,delete_after=delay).send(ctx)
 		await channel.connect(cls=wavelink.Player)
 		await Message.Embed(title="♫ Ready to play music in {}!".format(channel),color=ctx.author,delete_after=delay).send(ctx)
+	def random_question(self):
+			with open('suisei.json') as fp:
+				data = json.load(fp)
+				# questions = data[0]["videoId"]
+				# print(questions)
+				random_index = r.randint(0, len(data)-1)
+				return data[random_index]['videoId']
+	def random_miku(self):
+			with open('miku.json') as fp:
+				data = json.load(fp)
+				# questions = data[0]["videoId"]
+				# print(questions)
+				random_index = r.randint(0, len(data)-1)
+				return data[random_index]['videoId']
+
+	@commands.command(aliases=["suisei"])
+	async def suisui(self,ctx,*,channel=None):
+		"""Joins a passed voice channel, or the author's if none passed."""
+		
+		await ctx.send('Suisei is Adding Songs for you. Please Wait until Suisei is Finish.')
+		videos = scrapetube.get_channel("UC5zBLhF5HCmBrUHzT8g7wxQ")
+		lst = list(videos)
+		# the json file where the output must be stored
+		out_file = open("suisei.json", "w")
+		
+		json.dump(lst, out_file, indent = 6)
+		
+		out_file.close()
+		await self.play(ctx=ctx,url="https://www.youtube.com/watch?v="+self.random_question())
+		for i in range(15):
+			await self.play(ctx=ctx,url="https://www.youtube.com/watch?v="+self.random_question())
+
+		
+	@commands.command(aliases=["sui"])
+	async def joinc(self,ctx,*, count = None):
+			channel=None
+			"""Joins a passed voice channel, or the author's if none passed."""
+			
+			await ctx.send('Suisei is Adding '+ count+' Songs for you. Please Wait until Suisei is Finish.')
+			videos = scrapetube.get_channel("UC5zBLhF5HCmBrUHzT8g7wxQ")
+			lst = list(videos)
+			# the json file where the output must be stored
+			out_file = open("suisei.json", "w")
+			
+			json.dump(lst, out_file, indent = 6)
+			
+			out_file.close()
+			await self.play(ctx=ctx,url="https://www.youtube.com/watch?v="+self.random_question())
+			print(int(count))
+			for i in range(int(count)):
+				await self.play(ctx=ctx,url="https://www.youtube.com/watch?v="+self.random_question())
+		
+	@commands.command(aliases=["miku"])
+	async def joinf(self,ctx,*,channel=None):
+		"""Joins a passed voice channel, or the author's if none passed."""
+		
+		await ctx.send('Suisei is Adding Miku Songs for you. Please Wait until Suisei is Finish.')
+		videos = scrapetube.get_playlist("PL4wjQC0_Imx2q0RpN5u5NpeQrI64SfvNO")
+		lst = list(videos)
+		# the json file where the output must be stored
+		out_file = open("miku.json", "w")
+		
+		json.dump(lst, out_file, indent = 6)
+		
+		out_file.close()
+		
+		
+		await self.play(ctx=ctx,url="https://www.youtube.com/watch?v="+self.random_miku())
+		for i in range(15):
+			await self.play(ctx=ctx,url="https://www.youtube.com/watch?v="+self.random_miku())
+	
+	@commands.command(aliases=["mik"])
+	async def miks(self,ctx,*, count = None):
+		channel=None
+		"""Joins a passed voice channel, or the author's if none passed."""
+		
+		await ctx.send('Suisei is Adding'+ count+' Miku Songs for you. Please Wait until Suisei is Finish.')
+		videos = scrapetube.get_playlist("PL4wjQC0_Imx2q0RpN5u5NpeQrI64SfvNO")
+		lst = list(videos)
+		# the json file where the output must be stored
+		out_file = open("miku.json", "w")
+		
+		json.dump(lst, out_file, indent = 6)
+		
+		out_file.close()
+		await self.play(ctx=ctx,url="https://www.youtube.com/watch?v="+self.random_miku())
+		for i in range(int(count)):
+			await self.play(ctx=ctx,url="https://www.youtube.com/watch?v="+self.random_miku())
 
 	@commands.command(hidden=True)
 	async def okbye(self, ctx):
@@ -660,14 +751,15 @@ class Music(commands.Cog):
 			return await Message.Embed(title="♫ I've left the voice channel!",color=ctx.author,delete_after=delay).send(ctx)
 		await Message.Embed(title="♫ Not connected to a voice channel!",color=ctx.author,delete_after=delay).send(ctx)
 
-	@commands.command()
+	@commands.command(aliases=["p"])
 	async def play(self, ctx, *, url = None):
 		"""Plays from a url (almost anything youtube_dl supports) or resumes a currently paused song."""
 
 		delay = self.settings.getServerStat(ctx.guild, "MusicDeleteDelay", 20)
 		player = await self.get_player(ctx.guild)
 		if not player or not player.is_connected():
-			return await Message.Embed(title="♫ I am not connected to a voice channel!",color=ctx.author,delete_after=delay).send(ctx)
+			await join(ctx)
+			# await join(ctx)
 		if player.is_paused() and url is None:
 			# We're trying to resume
 			await player.resume()
@@ -683,9 +775,11 @@ class Music(commands.Cog):
 		# Take the songs we got back - if any - and add them to the queue
 		if not songs or not "tracks" in songs: # Got nothing :(
 			return await Message.Embed(title="♫ I couldn't find anything for that search!",description="Try using more specific search terms, or pass a url instead.",color=ctx.author,delete_after=delay).edit(ctx,message)
+
 		await self.add_to_queue(player,songs["tracks"])
 		await self.state_added(ctx,songs,message,shuffled=False)
 		self.bot.dispatch("check_play",player) # Dispatch the event to check if we should start playing
+	
 
 	@commands.command()
 	async def unplay(self, ctx, *, song_number = None):
@@ -694,7 +788,8 @@ class Music(commands.Cog):
 		delay = self.settings.getServerStat(ctx.guild, "MusicDeleteDelay", 20)
 		player = await self.get_player(ctx.guild)
 		if not player or not player.is_connected():
-			return await Message.Embed(title="♫ I am not connected to a voice channel!",color=ctx.author,delete_after=delay).send(ctx)
+			await join(ctx)
+			#await join(ctx)
 		if player.queue.is_empty:
 			# No songs in queue
 			return await Message.Embed(title="♫ No songs in queue!", description="If you want to bypass a currently playing song, use `{}skip` instead.".format(ctx.prefix),color=ctx.author,delete_after=delay).send(ctx)
@@ -719,7 +814,8 @@ class Music(commands.Cog):
 		delay = self.settings.getServerStat(ctx.guild, "MusicDeleteDelay", 20)
 		player = await self.get_player(ctx.guild)
 		if not player or not player.is_connected():
-			return await Message.Embed(title="♫ I am not connected to a voice channel!",color=ctx.author,delete_after=delay).send(ctx)
+			await join(ctx)
+			#await join(ctx)
 		if player.queue.is_empty:
 			# No songs in queue
 			return await Message.Embed(title="♫ No songs in queue!",description="If you want to bypass a currently playing song, use `{}skip` instead.".format(ctx.prefix),color=ctx.author,delete_after=delay).send(ctx)
@@ -756,7 +852,8 @@ class Music(commands.Cog):
 		player = await self.get_player(ctx.guild)
 		if not player or not player.is_connected():
 			if url is None: # No need to connect to shuffle nothing
-				return await Message.Embed(title="♫ I am not connected to a voice channel!",color=ctx.author,delete_after=delay).send(ctx)
+				await join(ctx)
+				#eturn await Message.Embed(title="♫ I am not connected to a voice channel!",color=ctx.author,delete_after=delay).send(ctx)
 			if not ctx.author.voice:
 				return await Message.Embed(title="♫ You are not connected to a voice channel!",color=ctx.author,delete_after=delay).send(ctx)
 			await player.connect(ctx.author.voice.channel.id)
@@ -791,7 +888,8 @@ class Music(commands.Cog):
 		delay = self.settings.getServerStat(ctx.guild, "MusicDeleteDelay", 20)
 		player = await self.get_player(ctx.guild)
 		if not player or not player.is_connected():
-			return await Message.Embed(title="♫ Not connected to a voice channel!",color=ctx.author,delete_after=delay).send(ctx)
+			await join(ctx)
+			#return await Message.Embed(title="♫ Not connected to a voice channel!",color=ctx.author,delete_after=delay).send(ctx)
 		if player.is_paused(): # Just toggle play
 			return await ctx.invoke(self.play)
 		if not player.is_playing():
@@ -813,7 +911,8 @@ class Music(commands.Cog):
 		delay = self.settings.getServerStat(ctx.guild, "MusicDeleteDelay", 20)
 		player = await self.get_player(ctx.guild)
 		if not player or not player.is_connected():
-			return await Message.Embed(title="♫ I am not connected to a voice channel!",color=ctx.author,delete_after=delay).send(ctx)
+			await join(ctx)
+			#await join(ctx)
 		if not player.is_paused():
 			return await Message.Embed(title="♫ Not currently paused!",color=ctx.author,delete_after=delay).send(ctx)
 		# We're trying to resume
@@ -829,7 +928,8 @@ class Music(commands.Cog):
 		delay = self.settings.getServerStat(ctx.guild, "MusicDeleteDelay", 20)
 		player = await self.get_player(ctx.guild)
 		if not player or not player.is_connected():
-			return await Message.Embed(title="♫ Not connected to a voice channel!",color=ctx.author,delete_after=delay).send(ctx)
+			await join(ctx)
+			#return await Message.Embed(title="♫ Not connected to a voice channel!",color=ctx.author,delete_after=delay).send(ctx)
 		if not (player.is_playing() or player.is_paused()):
 			return await Message.Embed(title="♫ Not playing anything!",color=ctx.author,delete_after=delay).send(ctx)
 		# Try to resolve the position - first in seconds, then with the HH:MM:SS format
@@ -974,7 +1074,8 @@ class Music(commands.Cog):
 		player = await self.get_player(ctx.guild)
 		to_skip = False
 		if not player or not player.is_connected():
-			return await Message.Embed(title="♫ Not connected to a voice channel!",color=ctx.author,delete_after=delay).send(ctx)
+			await join(ctx)
+			#return await Message.Embed(title="♫ Not connected to a voice channel!",color=ctx.author,delete_after=delay).send(ctx)
 		if not player.is_playing():
 			return await Message.Embed(title="♫ Not playing anything!",color=ctx.author,delete_after=delay).send(ctx)
 		# Check for added by first, then check admin
@@ -1025,7 +1126,8 @@ class Music(commands.Cog):
 		delay = self.settings.getServerStat(ctx.guild, "MusicDeleteDelay", 20)
 		player = await self.get_player(ctx.guild)
 		if not player or not player.is_connected():
-			return await Message.Embed(title="♫ Not connected to a voice channel!",color=ctx.author,delete_after=delay).send(ctx)
+			await join(ctx)
+			#return await Message.Embed(title="♫ Not connected to a voice channel!",color=ctx.author,delete_after=delay).send(ctx)
 		if not player.is_playing():
 			return await Message.Embed(title="♫ Not playing anything!",color=ctx.author,delete_after=delay).send(ctx)
 		
@@ -1050,7 +1152,8 @@ class Music(commands.Cog):
 		if user is None: return await Message.Embed(title="♫ I couldn't find that user!",color=ctx.author,delete_after=delay).send(ctx)
 		player = await self.get_player(ctx.guild)
 		if not player or not player.is_connected():
-			return await Message.Embed(title="♫ Not connected to a voice channel!",color=ctx.author,delete_after=delay).send(ctx)
+			await join(ctx)
+			#return await Message.Embed(title="♫ Not connected to a voice channel!",color=ctx.author,delete_after=delay).send(ctx)
 		if not player.is_playing():
 			return await Message.Embed(title="♫ Not playing anything!",color=ctx.author,delete_after=delay).send(ctx)
 		
@@ -1092,7 +1195,8 @@ class Music(commands.Cog):
 		delay = self.settings.getServerStat(ctx.guild, "MusicDeleteDelay", 20)
 		player = await self.get_player(ctx.guild)
 		if player is None or not player.is_connected():
-			return await Message.Embed(title="♫ Not connected to a voice channel!",color=ctx.author,delete_after=delay).send(ctx)
+			await join(ctx)
+			#return await Message.Embed(title="♫ Not connected to a voice channel!",color=ctx.author,delete_after=delay).send(ctx)
 		if not player.is_playing() and not player.is_paused():
 			return await Message.Embed(title="♫ Not playing anything!",color=ctx.author,delete_after=delay).send(ctx)
 		if volume is None:
@@ -1604,4 +1708,8 @@ class Music(commands.Cog):
 			delete_after=delay,
 			footer="Filter changes may take a bit to apply"
 		).send(ctx)
+
+	
+
+		
 		

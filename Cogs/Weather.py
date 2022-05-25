@@ -156,7 +156,7 @@ class Weather(commands.Cog):
 		title = location.address
 		# Just want the current weather
 		r = await DL.async_json("http://api.openweathermap.org/data/2.5/weather?appid={}&lat={}&lon={}".format(
-			self.key,
+			'3ba8a1ea0a5d4a46b1c5097dbb866c39',
 			location.latitude,
 			location.longitude
 		))
