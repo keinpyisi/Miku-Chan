@@ -73,7 +73,7 @@ class CogManager(commands.Cog):
 
 	def _get_imported_by(self, file_name):
 		ext_list = []
-		for ext in os.listdir("Cogs"):
+		for ext in os.listdir("/home/SuiSeiBots/Cogs"):
 			# Avoid reloading Settings and Mute
 			if not ext.lower().endswith(".py") or ext == file_name:
 				continue
