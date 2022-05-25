@@ -19,9 +19,9 @@ class Music(commands.Cog):
 		self.bot      = bot
 		self.settings = settings
 		# Get the Lavalink info as needed
-		self.ll_host = bot.settings_dict.get("lavalink_host","lavalink.oops.wtf")
-		self.ll_port = bot.settings_dict.get("lavalink_port",2000)
-		self.ll_pass = bot.settings_dict.get("lavalink_password","www.freelavalink.ga")
+		self.ll_host = bot.settings_dict.get("lavalink_host","lavalink.gaproknetwork.xyz")
+		self.ll_port = bot.settings_dict.get("lavalink_port",2333)
+		self.ll_pass = bot.settings_dict.get("lavalink_password","gaproklavalink")
 		# Setup wavelink defaults
 		self.NodePool = wavelink.NodePool()
 		# Setup player specifics to remember
