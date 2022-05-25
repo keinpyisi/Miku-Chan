@@ -38,7 +38,7 @@ async def get_prefix(bot, message):
 
 	if not serverPrefix:
 		# No custom prefix - use the default
-		serverPrefix = settings_dict.get("prefix","$") # prefix
+		serverPrefix = settings_dict.get("prefix","*") # prefix
 	return (serverPrefix, "<@!{}> ".format(bot.user.id), "<@{}> ".format(bot.user.id))
 
 # This should be the main soul of the bot - everything should load from here
