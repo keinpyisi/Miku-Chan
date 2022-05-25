@@ -7,6 +7,7 @@ import subprocess
 from   discord.ext import commands
 from   Cogs import Settings
 from   Cogs import Message
+import sys
 
 def setup(bot):
 	# Add the bot
@@ -93,7 +94,11 @@ class CogManager(commands.Cog):
 				try:
 					self.bot.load_extension(x)
 					self.bot.dispatch("loaded_extension", self.bot.extensions.get(x))
-				except: print("{} failed to load!".format(x))
+				except Exception as e: 
+					exc_type, exc_obj, exc_tb = sys.exc_info()
+					fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+					print(exc_type, fname, exc_tb.tb_lineno)
+					print("{} failed to load!".format(x))
 			cog_count = len(self.preloads) # Assumes the prior 2 loaded correctly
 			cog_loaded = len(self.preloads) # Again, assumes success above
 			# Load the rest of the cogs
@@ -117,7 +122,10 @@ class CogManager(commands.Cog):
 						self.bot.load_extension("Cogs." + ext[:-3])
 						self.bot.dispatch("loaded_extension", self.bot.extensions.get("Cogs."+ext[:-3]))
 						cog_loaded += 1
-					except Exception as e:
+					except Exception as e: 
+						exc_type, exc_obj, exc_tb = sys.exc_info()
+						fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+						print(exc_type, fname, exc_tb.tb_lineno)
 						print("{} failed to load!".format(ext[:-3]))
 						print("    {}".format(e))
 						pass
@@ -149,7 +157,10 @@ class CogManager(commands.Cog):
 							self.bot.load_extension("Cogs."+e[:-3])
 							self.bot.dispatch("loaded_extension", self.bot.extensions.get("Cogs."+e[:-3]))
 							success += 1
-						except Exception as er:
+						except Exception as e: 
+							exc_type, exc_obj, exc_tb = sys.exc_info()
+							fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+							print(exc_type, fname, exc_tb.tb_lineno)
 							print("{} failed to load!".format(e[:-3]))
 							print("    {}".format(er))
 					return ( success, total )
