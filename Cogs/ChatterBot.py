@@ -1,4 +1,4 @@
-import asyncio, discord, os
+import asyncio, discord, time, os
 from discord.ext import commands
 from aiml import Kernel
 from Cogs import Utils, DisplayName
@@ -50,13 +50,13 @@ class ChatterBot(commands.Cog):
 		# Check if we can chat
 		lastTime = int(self.settings.getServerStat(server, "LastChat", 0))
 		threshold = int(self.waitTime)
-		currentTime = 0
+		currentTime = int(time.localtime())
 
 		if currentTime < (int(lastTime) + int(threshold)):
 			return False
 		
 		# If we made it here - set the LastPicture method
-		self.settings.setServerStat(server, "LastChat", 0)
+		self.settings.setServerStat(server, "LastChat", int(time.localtime()))
 		return True
 	
 	async def killcheck(self, message):
