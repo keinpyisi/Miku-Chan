@@ -21,13 +21,13 @@ class Music(commands.Cog):
 		self.bot      = bot
 		self.settings = settings
 		# Get the Lavalink info as needed
-		#self.ll_host = "localhost"
-		#self.ll_port = 2333
-		#self.ll_pass = "youshallnotpass"
-		self.ll_host = "151.106.113.116"
-
+		self.ll_host = "localhost"
 		self.ll_port = 2333
 		self.ll_pass = "youshallnotpass"
+		# self.ll_host = "151.106.113.116"
+
+		# self.ll_port = 2333
+		# self.ll_pass = "youshallnotpass"
 		
 		# Setup wavelink defaults
 		self.NodePool = wavelink.NodePool()
