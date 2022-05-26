@@ -397,4 +397,4 @@ async def on_message_edit(before, message):
 
 # Run the bot
 print("Starting up {} shard{}...".format(bot.shard_count,"" if bot.shard_count == 1 else "s"))
-bot.run("OTU1MDcxODk1NDIwNjc0MTQ4.Gme_q0.zcsXFuNf5fxgMdv-P__KZs2BtLl98PwAEeIRSs")
+bot.run("ODY3MjEwMjQyOTIzOTU0MjE2.GPY_WI.9VXIhetB4Bb_szu4XCFJ-fpdQoGurHn__LfNLk")

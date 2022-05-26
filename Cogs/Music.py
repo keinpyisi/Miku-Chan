@@ -4,6 +4,8 @@ from discord.ext import commands
 from Cogs import Utils, Message, DisplayName, PickList, DL
 import scrapetube
 import random as r
+from wavelink.ext import spotify
+from youtubesearchpython.__future__ import VideosSearch
 # This file was originally based on Rapptz's basic_voice.py:
 # https://github.com/Rapptz/discord.py/blob/master/examples/basic_voice.py
 
@@ -19,9 +21,14 @@ class Music(commands.Cog):
 		self.bot      = bot
 		self.settings = settings
 		# Get the Lavalink info as needed
-		self.ll_host = "localhost"
+		#self.ll_host = "localhost"
+		#self.ll_port = 2333
+		#self.ll_pass = "youshallnotpass"
+		self.ll_host = "151.106.113.116"
+
 		self.ll_port = 2333
 		self.ll_pass = "youshallnotpass"
+		
 		# Setup wavelink defaults
 		self.NodePool = wavelink.NodePool()
 		# Setup player specifics to remember
@@ -57,6 +64,7 @@ class Music(commands.Cog):
 				host=self.ll_host,
 				port=self.ll_port,
 				password=self.ll_pass,
+				spotify_client=spotify.SpotifyClient(client_id="d993716fdda9438281b6f2a81acbc506", client_secret="302d1908b2ee4ce0bfaaede6f7bc788e"),
 			)
 
 	async def get_player(self,guild):
@@ -296,9 +304,10 @@ class Music(commands.Cog):
 		if ctx: track.ctx = ctx # Append our ctx-based data if provided
 		return track
 
-	async def resolve_search(self, ctx, url, message = None, shuffle = False):
+	async def resolve_search(self, ctx, url, message = None, shuffle = False,player= None):
 		# Helper method to search for songs/resolve urls and add the contents to the queue
 		url = url.strip('<>')
+		tracksarray=[]
 		# Check if url - if not, remove /
 		urls = Utils.get_urls(url)
 		seek_pos = 0
@@ -306,11 +315,53 @@ class Music(commands.Cog):
 			if urls: # Need to load via node get_tracks/get_playlist
 				url = urls[0] # Get the first URL
 				node = await self.get_node()
-				if re.fullmatch(r"(?i).*(&|\?)list=.+",url): # Got a playlist
-					tracks = await node.get_playlist(wavelink.abc.Playlist,identifier=url)
-				else: # Probably a direct URL - try to load it
-					tracks = await node.get_tracks(wavelink.Track,query=url)
-					tracks = tracks[0] # Returns a list - get the first element
+				if re.findall(r"[\bhttps://open.\b]*spotify[\b.com\b]+",url):
+					print("SPOTIFY")
+					if "playlist" in url: # Got a playlist
+						print("PLAYLIST")
+						decoded = spotify.decode_url(url)
+						if decoded is not None:
+							print(decoded['type'], decoded['id'])
+							
+							# tracks = await spotify.SpotifyTrack.search(query=decoded['id'],type=spotify.SpotifySearchType.playlist)
+							# print(tracks[0])
+							
+							async for name in spotify.SpotifyTrack.iterator(query=decoded['id'],type=spotify.SpotifySearchType.playlist):
+								print(name)
+								videosSearch = VideosSearch(str(name), limit = 2)
+								videosResult = await videosSearch.next()
+								# Serializing json  
+								link=videosResult["result"][1]["link"]
+								track = await node.get_tracks(wavelink.Track,query=link)
+								tracks = track[0] # Returns a list - get the first element
+								tracksarray.append(track)
+								
+								
+
+								
+								
+								
+								
+					else: # Probably a direct URL - try to load it
+						print("SINGLE")
+						#tracks = await spotify.SpotifyTrack.search(query=url, return_first=True)
+						decoded = spotify.decode_url(url)
+						if decoded is not None:
+							print(decoded['type'], decoded['id'])
+							tracks = await spotify.SpotifyTrack.search(query=decoded['id'], return_first=True)
+							print(tracks)
+							
+							#tracks=tracks[0]
+				else:
+					print("NOT SPOTIFY")
+					if re.fullmatch(r"(?i).*(&|\?)list=.+",url): # Got a playlist
+						tracks = await node.get_playlist(wavelink.abc.Playlist,identifier=url)
+					else: # Probably a direct URL - try to load it
+						tracks = await node.get_tracks(wavelink.Track,query=url)
+						tracks = tracks[0] # Returns a list - get the first element
+						print(tracks)
+						
+				
 				# Let's also get the seek position if needed
 				try:
 					adj_dict = {"h":3600,"m":60,"s":1}
@@ -350,37 +401,45 @@ class Music(commands.Cog):
 					# Got the index of the track to add
 					tracks = tracks[index]
 				else:
+					print("ONLY")
+					print(url)
 					# We only want the first entry
 					tracks = await wavelink.YouTubeTrack.search(query=url,return_first=True)
 				# TODO:  Setup multi-track display based on results per server settings
 		except Exception as e:
 			tracks = None # Clear it out as something went wrong
 			print("Error resolving search:\n{}".format(repr(e)))
-		# We need to figure out if we've loaded a playlist
-		if hasattr(tracks,"info"):
-			tracks = self.get_track_with_info(tracks,ctx=ctx)
-			if seek_pos > 0: # Set the seek position
-				tracks.seek = seek_pos
-			# One track - let's just return it
-			return {"tracks":tracks,"search":url}
-		if hasattr(tracks,"data"):
-			if not tracks.data.get("tracks"): return None # wut
-			# Get the starting track within limits
-			valid_tracks = self.get_tracks_from_data(tracks.data,check_start=True,ctx=ctx)
-			if seek_pos > 0 and valid_tracks: # Set the seek position of the first track
-				valid_tracks[0].seek = seek_pos
-				if shuffle and len(valid_tracks)>1: # Shuffle the second on up
-					shuffle_tracks = valid_tracks[1:]
-					random.shuffle(shuffle_tracks)
-					valid_tracks = [valid_tracks[0]]+shuffle_tracks
-			elif shuffle: # Either no seek, or empty list - shuffle in place
-				random.shuffle(valid_tracks)
-			return {
-				"data":tracks.data,
-				"tracks":valid_tracks,
-				"playlist":tracks.data.get("playlistInfo",{}).get("name","Unknown Playlist"),
-				"search":url
-			}
+		if(len(tracksarray)>0):
+			for tracks in tracksarray:
+				print(tracks)
+				await self.add_to_queue(player,tracks)
+		else:
+				# We need to figure out if we've loaded a playlist
+			if hasattr(tracks,"info"):
+				tracks = self.get_track_with_info(tracks,ctx=ctx)
+				if seek_pos > 0: # Set the seek position
+					tracks.seek = seek_pos
+				# One track - let's just return it
+				return {"tracks":tracks,"search":url}
+			if hasattr(tracks,"data"):
+				if not tracks.data.get("tracks"): return None # wut
+				# Get the starting track within limits
+				valid_tracks = self.get_tracks_from_data(tracks.data,check_start=True,ctx=ctx)
+				if seek_pos > 0 and valid_tracks: # Set the seek position of the first track
+					valid_tracks[0].seek = seek_pos
+					if shuffle and len(valid_tracks)>1: # Shuffle the second on up
+						shuffle_tracks = valid_tracks[1:]
+						random.shuffle(shuffle_tracks)
+						valid_tracks = [valid_tracks[0]]+shuffle_tracks
+				elif shuffle: # Either no seek, or empty list - shuffle in place
+					random.shuffle(valid_tracks)
+				return {
+					"data":tracks.data,
+					"tracks":valid_tracks,
+					"playlist":tracks.data.get("playlistInfo",{}).get("name","Unknown Playlist"),
+					"search":url
+				}
+		
 		return None
 
 	def format_scale(self, player, prefix="", hide_100=True):
@@ -771,7 +830,8 @@ class Music(commands.Cog):
 			color=ctx.author
 			).send(ctx)
 		# Add our url to the queue
-		songs = await self.resolve_search(ctx,url,message=message)
+		songs = await self.resolve_search(ctx,url,message=message,player=player)
+		print(songs)
 		# Take the songs we got back - if any - and add them to the queue
 		if not songs or not "tracks" in songs: # Got nothing :(
 			return await Message.Embed(title="♫ I couldn't find anything for that search!",description="Try using more specific search terms, or pass a url instead.",color=ctx.author,delete_after=delay).edit(ctx,message)
@@ -873,7 +933,7 @@ class Music(commands.Cog):
 			color=ctx.author
 			).send(ctx)
 		# Add our url to the queue
-		songs = await self.resolve_search(ctx,url,message=message,shuffle=True)
+		songs = await self.resolve_search(ctx,url,message=message,shuffle=True,player=player)
 		# Take the songs we got back - if any - and add them to the queue
 		if not songs or not "tracks" in songs: # Got nothing :(
 			return await Message.Embed(title="♫ I couldn't find anything for that search!",description="Try using more specific search terms, or pass a url instead.",color=ctx.author,delete_after=delay).edit(ctx,message)
